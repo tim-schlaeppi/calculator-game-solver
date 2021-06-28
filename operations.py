@@ -228,3 +228,18 @@ class AddToButton(BaseOperation):
 
     def __str__(self):
         return f"[+] {self.number}"
+
+
+class MultiplyOnButton(BaseOperation):
+    is_meta_operation = True
+    is_meta_resistant = True
+
+    def __call__(self, config):
+        for operation in config["operations"]:
+            if not operation.is_meta_resistant:
+                operation.number *= self.number
+
+        return config
+
+    def __str__(self):
+        return f"[*] {self.number}"
