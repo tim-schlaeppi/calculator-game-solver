@@ -1,15 +1,15 @@
 import operations
-import calculate
+from calculate import calculate
 
 
 config = {
     "start": 0,
-    "end": 10,
-    "moves": 4,
+    "end": 121,
+    "moves": 5,
     "operations": [
         operations.Add(1),
-        operations.AddToButton(3)
+        *operations.save()
     ]
 }
 
-calculate.calculate(config["start"], config, config["moves"], [])
+calculate(config)

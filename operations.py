@@ -1,10 +1,4 @@
-class BaseOperation:
-    def __init__(self, number):
-        self.number = number
-
-    is_meta_operation = False
-    is_meta_resistant = False
-    number = 0
+from base_operation import BaseOperation
 
 
 """
@@ -25,43 +19,44 @@ The x passed to __call__ always meets the following requirements:
 
 
 class Add(BaseOperation):
-    def __call__(self, x):
-        return self.number + x
+    def __call__(self, context):
+        context.number += self.number
 
     def __str__(self):
         return f"x + {self.number}"
 
 
 class Subtract(BaseOperation):
-    def __call__(self, x):
-        return x - self.number
+    def __call__(self, context):
+        context.number -= self.number
 
     def __str__(self):
         return f"x - {self.number}"
 
 
 class MultiplyBy(BaseOperation):
-    def __call__(self, x):
-        return self.number * x
+    def __call__(self, context):
+        context.number *= self.number
 
     def __str__(self):
         return f"x * {self.number}"
 
 
 class DivideBy(BaseOperation):
-    def __call__(self, x):
-        x = x / self.number
+    def __call__(self, context):
+        x = context.number / self.number
         if x % 1 != 0:
-            return
-        return int(x)
+            context.number = None
+        else:
+            context.number = int(x)
 
     def __str__(self):
         return f"x / {self.number}"
 
 
 class RaiseBy(BaseOperation):
-    def __call__(self, x):
-        return x ** self.number
+    def __call__(self, context):
+        context.number = context.number ** self.number
 
     def __str__(self):
         return f"x ** {self.number}"
@@ -71,22 +66,22 @@ class DeleteLast(BaseOperation):
     def __init__(self):
         pass
 
-    def __call__(self, x):
-        x = str(x)
+    def __call__(self, context):
+        x = str(context.number)
         x = x[:-1]
         if x == "" or x == "-":
             x = "0"
-        return int(x)
+        context.number = int(x)
 
     def __str__(self):
         return f"x <-"
 
 
 class Append(BaseOperation):
-    def __call__(self, x):
-        x = str(x)
+    def __call__(self, context):
+        x = str(context.number)
         x = x + str(self.number)
-        return int(x)
+        context.number = int(x)
 
     def __str__(self):
         return f"x || {self.number}"
@@ -97,12 +92,12 @@ class Replace(BaseOperation):
         self.number = number
         self.replace_with = replace_with
 
-    def __call__(self, x):
-        x = str(x)
+    def __call__(self, context):
+        x = str(context.number)
         x = x.replace(str(self.number), str(self.replace_with))
         if x == "":
             x = "0"
-        return int(x)
+        context.number = int(x)
 
     def __str__(self):
         return f"{self.number} -> {self.replace_with}"
@@ -112,8 +107,8 @@ class FlipSign(BaseOperation):
     def __init__(self):
         pass
 
-    def __call__(self, x):
-        return -x
+    def __call__(self, context):
+        context.number *= -1
 
     def __str__(self):
         return f"-x"
@@ -123,15 +118,14 @@ class Reverse(BaseOperation):
     def __init__(self):
         pass
 
-    def __call__(self, x):
-        is_negative = x < 0
-        x = str(x)[::-1].replace("-", "")
+    def __call__(self, context):
+        x = str(context.number)[::-1].replace("-", "")
         x = int(x)
 
-        if is_negative:
+        if context.number < 0:
             x *= -1
 
-        return x
+        context.number = x
 
     def __str__(self):
         return f"x -><-"
@@ -141,14 +135,14 @@ class Sum(BaseOperation):
     def __init__(self):
         pass
 
-    def __call__(self, x):
-        is_negative = x < 0
-        x = str(abs(x))
+    def __call__(self, context):
+        x = str(abs(context.number))
 
-        if is_negative:
-            return -sum(map(lambda n: int(n), x))
-        else:
-            return sum(map(lambda n: int(n), x))
+        x = sum(map(lambda n: int(n), x))
+
+        if context.number < 0:
+            x *= -1
+        context.number = x
 
     def __str__(self):
         return f"Σ x"
@@ -158,18 +152,17 @@ class ShiftLeft(BaseOperation):
     def __init__(self):
         pass
 
-    def __call__(self, x):
-        is_negative = x < 0
-        x = str(abs(x))
+    def __call__(self, context):
+        x = str(abs(context.number))
         if len(x) > 1:
             x = x[1:] + x[0]
 
         x = int(x)
 
-        if is_negative:
+        if context.number < 0:
             x *= -1
 
-        return x
+        context.number = x
 
     def __str__(self):
         return f"x <<"
@@ -179,18 +172,17 @@ class ShiftRight(BaseOperation):
     def __init__(self):
         pass
 
-    def __call__(self, x):
-        is_negative = x < 0
-        x = str(abs(x))
+    def __call__(self, context):
+        x = str(abs(context.number))
         if len(x) > 1:
             x = x[-1] + x[:-1]
 
         x = int(x)
 
-        if is_negative:
+        if context.number < 0:
             x *= -1
 
-        return x
+        context.number = x
 
     def __str__(self):
         return f"x >>"
@@ -200,46 +192,75 @@ class Mirror(BaseOperation):
     def __init__(self):
         pass
 
-    def __call__(self, x):
-        is_negative = x < 0
-        x = str(abs(x))
+    def __call__(self, context):
+        x = str(abs(context.number))
         x = x + x[::-1]
         x = int(x)
 
-        if is_negative:
+        if context.number < 0:
             x *= -1
 
-        return x
+        context.number = x
 
     def __str__(self):
         return f"x || x -><-"
 
 
 class AddToButton(BaseOperation):
-    is_meta_operation = True
     is_meta_resistant = True
 
-    def __call__(self, config):
-        for operation in config["operations"]:
+    def __call__(self, context):
+        for operation in context.config["operations"]:
             if not operation.is_meta_resistant:
                 operation.number += self.number
-
-        return config
 
     def __str__(self):
         return f"[+] {self.number}"
 
 
 class MultiplyOnButton(BaseOperation):
-    is_meta_operation = True
     is_meta_resistant = True
 
-    def __call__(self, config):
-        for operation in config["operations"]:
+    def __call__(self, context):
+        for operation in context.config["operations"]:
             if not operation.is_meta_resistant:
                 operation.number *= self.number
 
-        return config
-
     def __str__(self):
         return f"[*] {self.number}"
+
+
+class SaveOperation(BaseOperation):
+    def __init__(self):
+        pass
+
+    is_meta_resistant = True
+
+    def __call__(self, context):
+        context.saved_state.saved_number = abs(context.number)
+
+    def __str__(self):
+        return f"save"
+
+
+class RestoreOperation(BaseOperation):
+    def __init__(self):
+        pass
+
+    is_meta_resistant = True
+
+    def __call__(self, context):
+        if context.saved_state.saved_number is None:
+            return
+        context.number = int(str(context.number) + str(context.saved_state.saved_number))
+
+    def __str__(self):
+        return f"restore"
+
+
+def save():
+    save_operation = SaveOperation()
+    restore_operation = RestoreOperation()
+
+    return save_operation, restore_operation
+
