@@ -4,6 +4,7 @@ class BaseOperation:
 
     is_meta_operation = False
     is_meta_resistant = False
+    will_change_number = True
     number = 0
 
 

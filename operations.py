@@ -206,8 +206,28 @@ class Mirror(BaseOperation):
         return f"x || x -><-"
 
 
+class Inverse10(BaseOperation):
+    def __init__(self):
+        pass
+
+    def __call__(self, context):
+        result = ""
+        x = str(context.number)
+        for digit in x:
+            if digit == "-":
+                result += "-"
+            else:
+                result += str((10 - int(digit)) % 10)
+
+        context.number = int(result)
+
+    def __str__(self):
+        return f"inv10 x"
+
+
 class AddToButton(BaseOperation):
     is_meta_resistant = True
+    will_change_number = False
 
     def __call__(self, context):
         for operation in context.config["operations"]:
@@ -220,6 +240,7 @@ class AddToButton(BaseOperation):
 
 class MultiplyOnButton(BaseOperation):
     is_meta_resistant = True
+    will_change_number = False
 
     def __call__(self, context):
         for operation in context.config["operations"]:
@@ -234,6 +255,7 @@ class SaveOperation(BaseOperation):
     def __init__(self):
         pass
 
+    will_change_number = False
     is_meta_resistant = True
 
     def __call__(self, context):
@@ -251,6 +273,7 @@ class RestoreOperation(BaseOperation):
 
     def __call__(self, context):
         if context.saved_state.saved_number is None:
+            context.invalid_operation = True
             return
         context.number = int(str(context.number) + str(context.saved_state.saved_number))
 

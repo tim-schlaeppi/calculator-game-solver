@@ -4,6 +4,7 @@ class Context:
     saved_state = None
     moves_left = None
     operations_list = None
+    invalid_operation = False
 
     def __init__(self, number, config, saved_state, moves_left, operations_list):
         self.number = number

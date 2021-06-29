@@ -4,12 +4,16 @@ from context import Context
 
 
 def calculate(config):
+    #global count
+    #count = 0
     context = Context(config["start"], config, SavedState(), config["moves"] + 1, [])
     result = calculate_recursive(context)
+    #print(count)
     return result
 
 
 def calculate_recursive(context):
+    global count
     # Checks if the number is not invalid among other things
     if context.number is None:
         return
@@ -25,6 +29,7 @@ def calculate_recursive(context):
         print("\n".join(context.operations_list))
         return context.operations_list
 
+    old_num = context.number
     # Goes deeper into recursion for each Operation
     for operation in context.config["operations"]:
         new_context = deepcopy(context)
@@ -36,6 +41,9 @@ def calculate_recursive(context):
 
         # Modifies Opbject 'context', to be passed down the tree
         operation(new_context)
+        #count += 1
+        if new_context.invalid_operation or (new_context.number == old_num and operation.will_change_number):
+            continue
 
         result = calculate_recursive(new_context)
 
