@@ -2,6 +2,7 @@ import unittest
 
 import operations
 from calculate import calculate
+from base_operation import Portal
 
 
 class TestCaseBasic(unittest.TestCase):
@@ -92,6 +93,19 @@ class TestCaseSaveRestore(unittest.TestCase):
         }
         self.assertEqual(['x -><-', 'save', 'x + 2', 'x + 2', 'restore', 'x / 3'], calculate(config))
 
+class TestCasePortal(unittest.TestCase):
+    def test_portal(self):
+        config = {
+            "start": 99,
+            "end": 10,
+            "moves": 3,
+            "portal": Portal(3, 1),
+            "operations": [
+                operations.Append(1),
+                operations.Subtract(1),
+            ],
+        }
+        self.assertEqual(['x || 1', 'x || 1', 'x - 1'], calculate(config))
 
 class TestCaseLevels(unittest.TestCase):
     def test_level_146(self):

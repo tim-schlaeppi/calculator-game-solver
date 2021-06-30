@@ -6,6 +6,8 @@ from context import Context
 def calculate(config):
     #global count
     #count = 0
+
+
     context = Context(config["start"], config, SavedState(), config["moves"] + 1, [])
     result = calculate_recursive(context)
     #print(count)
@@ -41,6 +43,17 @@ def calculate_recursive(context):
 
         # Modifies Opbject 'context', to be passed down the tree
         operation(new_context)
+
+        if "portal" in context.config:
+            portal = context.config["portal"]
+            number = new_context.number
+
+            while portal.applies_to(number):
+                number = portal.execute(number)
+
+            new_context.number = number
+
+
         #count += 1
         if new_context.invalid_operation or (new_context.number == old_num and operation.will_change_number):
             continue
